@@ -719,6 +719,9 @@ func make_ui() -> void:
             if send_shared_chat(clean_message):
                 chat_input.clear()
     )
+    if OS.has_feature("web"):
+        chat_input.visible = false
+        _setup_web_chat_input()
 
     var emote_button := Button.new()
     emote_button.text = "💗 إيماءات"
@@ -1205,3 +1208,53 @@ func make_profile_screen() -> void:
         save_profile()
         get_tree().reload_current_scene()
     )
+
+
+func _setup_web_chat_input() -> void:
+    var callback = JavaScriptBridge.create_callback(_on_web_chat_submit)
+    JavaScriptBridge.get_interface("window").set("babitoChatSubmit", callback)
+    JavaScriptBridge.eval("""
+    (() => {
+        if (document.getElementById('babito-web-chat')) return;
+        const form = document.createElement('form');
+        form.id = 'babito-web-chat';
+        form.style.cssText =
+            'position:fixed;left:14%;bottom:calc(12px + env(safe-area-inset-bottom));' +
+            'width:70%;z-index:2147483647;display:flex;gap:6px;direction:rtl;' +
+            'box-sizing:border-box;font-family:Arial,sans-serif;';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'babito-web-chat-text';
+        input.placeholder = 'اكتب رسالتك هنا 💬';
+        input.autocomplete = 'off';
+        input.enterKeyHint = 'send';
+        input.style.cssText =
+            'flex:1;min-width:0;height:44px;box-sizing:border-box;' +
+            'font-size:16px;padding:8px 12px;border:2px solid #f09acb;' +
+            'border-radius:12px;background:#fff;color:#222;';
+        const button = document.createElement('button');
+        button.type = 'submit';
+        button.textContent = 'إرسال';
+        button.style.cssText =
+            'height:44px;padding:0 14px;font-size:16px;border:0;' +
+            'border-radius:12px;background:#f09acb;color:#222;';
+        form.append(input, button);
+        document.body.appendChild(form);
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const message = input.value.trim();
+            if (!message || !window.babitoChatSubmit) return;
+            window.babitoChatSubmit(message);
+            input.value = '';
+            input.focus();
+        });
+    })();
+    """, true)
+
+
+func _on_web_chat_submit(args: Array) -> void:
+    if args.is_empty():
+        return
+    var message := str(args[0]).strip_edges()
+    if not message.is_empty():
+        send_shared_chat(message)
