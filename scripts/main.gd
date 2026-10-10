@@ -1032,6 +1032,9 @@ func toggle_house_light() -> void:
 
 
 func _physics_process(delta: float) -> void:
+    if not profile_complete or player == null or camera == null:
+        return
+
     var direction := Vector3(joystick_vector.x, 0, joystick_vector.y)
     if direction.length() > 0.1:
         direction = direction.normalized()
