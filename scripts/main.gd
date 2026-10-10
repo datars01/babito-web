@@ -703,8 +703,16 @@ func make_ui() -> void:
     chat_input.position = Vector2(220, 645)
     chat_input.size = Vector2(820, 44)
     chat_input.placeholder_text = "اكتب رسالة واضغط Enter 💬"
+    chat_input.virtual_keyboard_enabled = true
+    chat_input.focus_mode = Control.FOCUS_ALL
     chat_input.add_theme_font_size_override("font_size", 20)
     layer.add_child(chat_input)
+    chat_input.gui_input.connect(func(event: InputEvent):
+        if event is InputEventMouseButton and event.pressed:
+            chat_input.grab_focus()
+        elif event is InputEventScreenTouch and event.pressed:
+            chat_input.grab_focus()
+    )
     chat_input.text_submitted.connect(func(message: String):
         var clean_message := message.strip_edges()
         if not clean_message.is_empty():
