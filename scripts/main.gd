@@ -943,6 +943,9 @@ func refresh_chat_history() -> void:
 
 
 func _process(_delta: float) -> void:
+    if not profile_complete or player == null or camera == null:
+        return
+
     poll_chat_server()
     if inside_house_index >= 0:
         enter_house_button.visible = false
