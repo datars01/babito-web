@@ -27,16 +27,32 @@ var chat_join_sent := false
 var player_name := "Babito"
 var avatar_style := 0
 var player_name_tag: Label3D
+var arabic_font: FontFile
+var arabic_theme: Theme
+
+
+func apply_arabic_theme(node: Node) -> void:
+    if node is Control:
+        (node as Control).theme = arabic_theme
+    for child in node.get_children():
+        apply_arabic_theme(child)
 
 
 func _ready() -> void:
+    arabic_font = load("res://fonts/NotoSansArabic-Regular.ttf") as FontFile
+    arabic_theme = Theme.new()
+    arabic_theme.default_font = arabic_font
+    arabic_theme.default_font_size = 18
+
     load_profile()
     if not profile_complete:
         make_profile_screen()
+        apply_arabic_theme(self)
         return
     make_world()
     make_player()
     make_ui()
+    apply_arabic_theme(self)
     load_chat_history()
     connect_chat_server()
     show_message("هلا بيك بعالم بابيتو! 💗")
@@ -534,7 +550,9 @@ func make_player() -> void:
     player.add_child(collision)
 
     bubble = Label3D.new()
+    bubble.font = arabic_font
     player_name_tag = Label3D.new()
+    player_name_tag.font = arabic_font
     player_name_tag.name = "PlayerNameTag"
     player_name_tag.text = player_name
     player_name_tag.position = Vector3(0, 3.45, 0)
